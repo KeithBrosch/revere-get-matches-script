@@ -16,7 +16,7 @@ function getMatchesStartingSoon() {
             let index = 0;
             do {
                 let startsIn = matchDivs[index].children[0].data;
-                if (startsIn === '0m' || startsIn === '1m' || startsIn === '2m' || startsIn === '3m' || startsIn === '4m' || startsIn === '5m') {
+                if (index < 1) {
                     getMatch(`https://www.vlr.gg${matchDivs[index].parent.parent.parent.attribs.href}`, startsIn);
                 } else {
                     break;
@@ -37,9 +37,11 @@ function getMatch(matchUrl, startsIn) {
             let match = {
                 team1: {
                     name: null,
+                    id: null,
                 },
                 team2: {
                     name: null,
+                    id: null,
                 },
                 streamLink: null,
                 startsIn: startsIn,
@@ -48,6 +50,9 @@ function getMatch(matchUrl, startsIn) {
             const teamNames = $('.wf-title-med');
             match.team1.name = teamNames[0].children[0].data.trim();
             match.team2.name = teamNames[1].children[0].data.trim();
+            const teamLinks = $('.match-header-link ');
+            match.team1.id = teamLinks[0].attribs.href;
+            match.team2.id = teamLinks[1].attribs.href;
             const streamLinks = $('.match-streams-btn-external');
             match.streamLink = streamLinks[0].attribs.href;
             console.log(match);
