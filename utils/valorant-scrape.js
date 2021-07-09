@@ -16,7 +16,7 @@ function getMatchesStartingSoon() {
             let index = 0;
             do {
                 let startsIn = matchDivs[index].children[0].data;
-                if (index < 1) {
+                if (startsIn === '0m' || startsIn === '1m' || startsIn === '2m' || startsIn === '3m' || startsIn === '4m' || startsIn === '5m') {
                     getMatch(`https://www.vlr.gg${matchDivs[index].parent.parent.parent.attribs.href}`, startsIn);
                 } else {
                     break;
