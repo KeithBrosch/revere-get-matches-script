@@ -87,7 +87,7 @@ function getMatch(matchUrl, startsIn) {
         console.log(`Found this stream link ${match.streamLink}`);
         console.log('-----------------------------------------');
       } else {
-        console.log(`Could not find a stream link for this match, defaulting to ${match.matchUrl}`);
+        console.log(`Could not find a stream link for this match, defaulting to ${matchUrl}`);
         console.log('-----------------------------------------');
       }
 
