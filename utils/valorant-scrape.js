@@ -94,6 +94,7 @@ function getMatch(matchUrl, startsIn) {
       console.log(`Full Match Details: ${JSON.stringify(match)}`);
       console.log('-----------------------------------------');
       // todo: need to send match to DB
+      // note: not every team has a team ID
     }
   });
 }
