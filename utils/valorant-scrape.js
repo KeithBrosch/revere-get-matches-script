@@ -52,7 +52,7 @@ function getMatchesStartingSoon() {
 
 // get more in depth data on the match
 function getMatch(matchUrl, startsIn) {
-  console.log(`Getting more info on upcomign match ${matchUrl}, which starts in ${startsIn}`);
+  console.log(`Getting more info on upcoming match ${matchUrl}, which starts in ${startsIn}`);
   console.log('-----------------------------------------');
   request(matchUrl, (error, response) => {
     if (error) {
