@@ -5,15 +5,20 @@ const url = "https://www.vlr.gg/matches";
 
 // get the URL of all matches beginning in the next 5 minutes and pass them on to getMatch
 function getMatchesStartingSoon() {
-  console.log(`Scraping at ${new Date()}`);
+  console.log(`Starting Get Teams Scrape at ${new Date()}`);
+  console.log('-----------------------------------------');
   let matchesStartingSoon = [];
   request(url, (error, response) => {
     if (error) {
+      console.log(`Could not GET ${url}`);
       console.log(error);
+      console.log('-----------------------------------------');
     } else {
       const $ = cheerio.load(response.body);
       const matchDivs = $(".ml-eta");
       const numMatches = matchDivs.length;
+      console.log(`Found ${numMatches} total matches`)
+      console.log('-----------------------------------------');
       let index = 0;
       do {
         let startsIn = matchDivs[index].children[0].data;
@@ -25,6 +30,8 @@ function getMatchesStartingSoon() {
           startsIn === "4m" ||
           startsIn === "5m"
         ) {
+          console.log(`${matchDivs[index].parent.parent.parent.attribs.href} starts in ${startsIn}`);
+          console.log('-----------------------------------------');
           getMatch(
             `https://www.vlr.gg${matchDivs[index].parent.parent.parent.attribs.href}`,
             startsIn
@@ -32,6 +39,7 @@ function getMatchesStartingSoon() {
         } else {
           if (index === 0) {
             console.log("there are no matches starting in the next 5 minutes");
+            console.log('-----------------------------------------');
           }
           break;
         }
@@ -44,9 +52,13 @@ function getMatchesStartingSoon() {
 
 // get more in depth data on the match
 function getMatch(matchUrl, startsIn) {
+  console.log(`Getting more info on upcomign match ${matchUrl}, which starts in ${startsIn}`);
+  console.log('-----------------------------------------');
   request(matchUrl, (error, response) => {
     if (error) {
+      console.log(`Could not GET ${matchUrl}`)
       console.log(error);
+      console.log('-----------------------------------------');
     } else {
       let match = {
         team1: {
@@ -67,11 +79,21 @@ function getMatch(matchUrl, startsIn) {
       const teamLinks = $(".match-header-link ");
       match.team1.id = teamLinks[0].attribs.href;
       match.team2.id = teamLinks[1].attribs.href;
+      console.log(`Teams Playing: ${JSON.stringify(match.team1)} vs ${JSON.stringify(match.team2)}`);
+      console.log('-----------------------------------------');
       const streamLinks = $(".match-streams-btn-external");
-      match.streamLink = streamLinks[0].attribs.href;
+      if (streamLinks.length && streamLinks[0].attribs && streamLinks[0].attribs.href) {
+        match.streamLink = streamLinks[0].attribs.href;
+        console.log(`Found this stream link ${match.streamLink}`);
+        console.log('-----------------------------------------');
+      } else {
+        console.log(`Could not find a stream link for this match, defaulting to ${match.matchUrl}`);
+        console.log('-----------------------------------------');
+      }
 
-      console.log(match);
-      // meed to send match to DB
+      console.log(`Full Match Details: ${JSON.stringify(match)}`);
+      console.log('-----------------------------------------');
+      // todo: need to send match to DB
     }
   });
 }
