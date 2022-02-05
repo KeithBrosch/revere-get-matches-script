@@ -5,14 +5,16 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index",
-    "prodStart": "node bin/matchScraper.js"
+    "cronstart": "node dev/nodeCronScrape.js",
+    "start": "node index.js"
   },
   "author": "Keith Brosch",
   "license": "ISC",
   "dependencies": {
     "cheerio": "^1.0.0-rc.10",
-    "node-cron": "^3.0.0",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "node-cron": "^3.0.0",
   }
 }
