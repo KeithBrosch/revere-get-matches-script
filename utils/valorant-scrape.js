@@ -28,7 +28,12 @@ function getMatchesStartingSoon() {
           startsIn === "2m" ||
           startsIn === "3m" ||
           startsIn === "4m" ||
-          startsIn === "5m"
+          startsIn === "5m" ||
+          startsIn === "6m" ||
+          startsIn === "7m" ||
+          startsIn === "8m" ||
+          startsIn === "9m" ||
+          startsIn === "10m"
         ) {
           console.log(`${matchDivs[index].parent.parent.parent.attribs.href} starts in ${startsIn}`);
           console.log('-----------------------------------------');
