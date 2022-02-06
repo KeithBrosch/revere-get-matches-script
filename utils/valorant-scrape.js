@@ -4,7 +4,7 @@ const request = require("request");
 const url = "https://www.vlr.gg/matches";
 
 // get the URL of all matches beginning in the next 5 minutes and pass them on to getMatch
-function getMatchesStartingSoon() {
+function getMatchesStartingSoon(isTest) {
   console.log(`Starting Get Teams Scrape at ${new Date()}`);
   console.log('-----------------------------------------');
   let matchesStartingSoon = [];
@@ -99,8 +99,13 @@ function getMatch(matchUrl, startsIn) {
 
       console.log(`Full Match Details: ${JSON.stringify(match)}`);
       console.log('-----------------------------------------');
-      // todo: need to send match to DB
-      // note: not every team has a team ID
+      if (!isTest) {
+        // todo: need to send match to DB
+        // note: not every team has a team ID
+      } else {
+          // todo: just console log the match info that WOULD get sent to the DB if this weren't a test.
+      }
+      
     }
   });
 }
