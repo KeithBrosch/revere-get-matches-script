@@ -4,7 +4,7 @@ const axios = require("axios");
 
 const url = "https://www.vlr.gg/matches";
 const apiBase = process.env.CURR_ENVIRONMENT == "prod" ? process.env.HEROKU_API_BASE : process.env.LOCAL_API_BASE;
-// get the URL of all matches beginning in the next 5 minutes and pass them on to getMatch
+// get the URL of all matches beginning in the next 10 minutes and pass them on to getMatch
 function getMatchesStartingSoon(isTest) {
   console.log(`Starting Get Teams Scrape at ${new Date()}`);
   console.log('-----------------------------------------');
@@ -46,7 +46,7 @@ function getMatchesStartingSoon(isTest) {
           )
         } else {
           if (index === 0) {
-            console.log("there are no matches starting in the next 5 minutes");
+            console.log("there are no matches starting in the next 10 minutes");
             console.log('-----------------------------------------');
           }
           break;
