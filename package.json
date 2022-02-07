@@ -11,6 +11,7 @@
   "author": "Keith Brosch",
   "license": "ISC",
   "dependencies": {
+    "axios": "^0.25.0",
     "cheerio": "^1.0.0-rc.10",
     "request": "^2.88.2"
   },
