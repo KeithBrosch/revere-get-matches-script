@@ -1,9 +1,16 @@
 const cheerio = require("cheerio");
 const request = require("request");
 const axios = require("axios");
+const dotenv = require("dotenv");
+
+dotenv.config({
+  path: "./.env",
+});
+
 
 const url = "https://www.vlr.gg/matches";
 const apiBase = process.env.CURR_ENVIRONMENT == "prod" ? process.env.HEROKU_API_BASE : process.env.LOCAL_API_BASE;
+
 // get the URL of all matches beginning in the next 10 minutes and pass them on to getMatch
 function getMatchesStartingSoon(isTest) {
   console.log(`Starting Get Teams Scrape at ${new Date()}`);
