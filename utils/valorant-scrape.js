@@ -1,9 +1,10 @@
 const cheerio = require("cheerio");
 const request = require("request");
+const axios = require("axios");
 
 const url = "https://www.vlr.gg/matches";
-
-// get the URL of all matches beginning in the next 5 minutes and pass them on to getMatch
+const apiBase = process.env.CURR_ENVIRONMENT == "prod" ? process.env.HEROKU_API_BASE : process.env.LOCAL_API_BASE;
+// get the URL of all matches beginning in the next 10 minutes and pass them on to getMatch
 function getMatchesStartingSoon(isTest) {
   console.log(`Starting Get Teams Scrape at ${new Date()}`);
   console.log('-----------------------------------------');
@@ -22,6 +23,7 @@ function getMatchesStartingSoon(isTest) {
       let index = 0;
       do {
         let startsIn = matchDivs[index].children[0].data;
+        //todo - could change this to something more universal instead of 10 ORs. low priority.
         if (
           startsIn === "0m" ||
           startsIn === "1m" ||
@@ -39,11 +41,12 @@ function getMatchesStartingSoon(isTest) {
           console.log('-----------------------------------------');
           getMatch(
             `https://www.vlr.gg${matchDivs[index].parent.parent.parent.attribs.href}`,
-            startsIn
-          );
+            startsIn,
+            isTest
+          )
         } else {
           if (index === 0) {
-            console.log("there are no matches starting in the next 5 minutes");
+            console.log("there are no matches starting in the next 10 minutes");
             console.log('-----------------------------------------');
           }
           break;
@@ -56,7 +59,7 @@ function getMatchesStartingSoon(isTest) {
 }
 
 // get more in depth data on the match
-function getMatch(matchUrl, startsIn) {
+  function getMatch(matchUrl, startsIn, isTest) {
   console.log(`Getting more info on upcoming match ${matchUrl}, which starts in ${startsIn}`);
   console.log('-----------------------------------------');
   request(matchUrl, (error, response) => {
@@ -82,8 +85,10 @@ function getMatch(matchUrl, startsIn) {
       match.team1.name = teamNames[0].children[0].data.trim();
       match.team2.name = teamNames[1].children[0].data.trim();
       const teamLinks = $(".match-header-link ");
-      match.team1.id = teamLinks[0].attribs.href;
-      match.team2.id = teamLinks[1].attribs.href;
+      let teamLinkString = teamLinks[0].attribs.href;
+      match.team1.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/") )
+      teamLinkString = teamLinks[1].attribs.href;
+      match.team2.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/") )
       console.log(`Teams Playing: ${JSON.stringify(match.team1)} vs ${JSON.stringify(match.team2)}`);
       console.log('-----------------------------------------');
       const streamLinks = $(".match-streams-btn-external");
@@ -100,10 +105,19 @@ function getMatch(matchUrl, startsIn) {
       console.log(`Full Match Details: ${JSON.stringify(match)}`);
       console.log('-----------------------------------------');
       if (!isTest) {
-        // todo: need to send match to DB
         // note: not every team has a team ID
+        // maybe make this its own function separate from getting the match from vlr
+        axios.post(`${apiBase}/followers`, match).then((res) => {
+        console.log(`sent match to backend to alert followers: ${JSON.stringify(match)}`);
+        console.log('-----------------------------------------');
+        return true;
+       })
+       .catch((err) =>{;
+        console.log(`axios catch -- ${err}`);
+        return false;
+       });
       } else {
-          // todo: just console log the match info that WOULD get sent to the DB if this weren't a test.
+          console.log(`this run is a test; data not sent to backend: ${JSON.stringify(match)}`)
       }
       
     }
