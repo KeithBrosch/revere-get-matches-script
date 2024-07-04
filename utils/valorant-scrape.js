@@ -1,21 +1,22 @@
 const cheerio = require("cheerio");
 const request = require("request");
 const axios = require("axios");
-const dotenv = require("dotenv");
-
-dotenv.config({
-  path: "./.env",
-});
+const { Games } = require('../Constants')
+const { getUsersForTeamsAndGame } = require("./dbClient");
 
 
 const url = "https://www.vlr.gg/matches";
-const apiBase = process.env.CURR_ENVIRONMENT == "prod" ? process.env.HEROKU_API_BASE : process.env.LOCAL_API_BASE;
 
 // get the URL of all matches beginning in the next 10 minutes and pass them on to getMatch
 function getMatchesStartingSoon(isTest) {
+  /*
+  //uncomment to test pulling 2 pre-seeded teams from db
+  getUsersForTeamsAndGame([474, 8877], Games.valorant)
+  return; */
   console.log(`Starting Get Teams Scrape at ${new Date()}`);
   console.log('-----------------------------------------');
   let matchesStartingSoon = [];
+
   request(url, (error, response) => {
     if (error) {
       console.log(`Could not GET ${url}`);
@@ -66,7 +67,7 @@ function getMatchesStartingSoon(isTest) {
 }
 
 // get more in depth data on the match
-  function getMatch(matchUrl, startsIn, isTest) {
+function getMatch(matchUrl, startsIn, isTest) {
   console.log(`Getting more info on upcoming match ${matchUrl}, which starts in ${startsIn}`);
   console.log('-----------------------------------------');
   request(matchUrl, (error, response) => {
@@ -93,9 +94,9 @@ function getMatchesStartingSoon(isTest) {
       match.team2.name = teamNames[1].children[0].data.trim();
       const teamLinks = $(".match-header-link ");
       let teamLinkString = teamLinks[0].attribs.href;
-      match.team1.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/") )
+      match.team1.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/"))
       teamLinkString = teamLinks[1].attribs.href;
-      match.team2.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/") )
+      match.team2.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/"))
       console.log(`Teams Playing: ${JSON.stringify(match.team1)} vs ${JSON.stringify(match.team2)}`);
       console.log('-----------------------------------------');
       const streamLinks = $(".match-streams-btn-external");
@@ -112,21 +113,17 @@ function getMatchesStartingSoon(isTest) {
       console.log(`Full Match Details: ${JSON.stringify(match)}`);
       console.log('-----------------------------------------');
       if (!isTest) {
-        // note: not every team has a team ID
-        // maybe make this its own function separate from getting the match from vlr
-        axios.post(`${apiBase}/followers`, match).then((res) => {
-        console.log(`sent match to backend to alert followers: ${JSON.stringify(match)}`);
-        console.log('-----------------------------------------');
-        return true;
-       })
-       .catch((err) =>{;
-        console.log(`axios catch -- ${err}`);
-        return false;
-       });
+          // note: not every team has a team ID
+          // maybe make this its own function separate from getting the match from vlr
+
+          // 1) get users subscribed to this team from DB
+          getUsersForTeamsAndGame([match.team1.id, match.team2.id], Games.valorant).then((result) => {
+            // 2) POST it over to Revere bot
+          })
       } else {
-          console.log(`this run is a test; data not sent to backend: ${JSON.stringify(match)}`)
+        console.log(`this run is a test; data not sent to backend: ${JSON.stringify(match)}`)
       }
-      
+
     }
   });
 }
