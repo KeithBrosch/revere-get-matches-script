@@ -33,17 +33,7 @@ function getMatchesStartingSoon(isTest) {
         let startsIn = matchDivs[index].children[0].data;
         //todo - could change this to something more universal instead of 10 ORs. low priority.
         if (
-          startsIn === "0m" ||
-          startsIn === "1m" ||
-          startsIn === "2m" ||
-          startsIn === "3m" ||
-          startsIn === "4m" ||
-          startsIn === "5m" ||
-          startsIn === "6m" ||
-          startsIn === "7m" ||
-          startsIn === "8m" ||
-          startsIn === "9m" ||
-          startsIn === "10m"
+          matchStartsInWindow(startsIn)
         ) {
           console.log(`${matchDivs[index].parent.parent.parent.attribs.href} starts in ${startsIn}`);
           console.log('-----------------------------------------');
@@ -93,10 +83,14 @@ function getMatch(matchUrl, startsIn, isTest) {
       match.team1.name = teamNames[0].children[0].data.trim();
       match.team2.name = teamNames[1].children[0].data.trim();
       const teamLinks = $(".match-header-link ");
-      let teamLinkString = teamLinks[0].attribs.href;
-      match.team1.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/"))
-      teamLinkString = teamLinks[1].attribs.href;
-      match.team2.id = teamLinkString.substring(teamLinkString.indexOf("/", 1) + 1, teamLinkString.lastIndexOf("/"))
+      const teamLinkString1 = teamLinks[0].attribs.href;
+      const teamLinkString2 = teamLinks[1].attribs.href;
+      if (!teamLinkString1 || !teamLinkString2) {
+        console.error(`1 or both teams are missing for match ${matchUrl}`)
+        return;
+      }
+      match.team1.id = teamLinkString1.substring(teamLinkString1.indexOf("/", 1) + 1, teamLinkString1.lastIndexOf("/"))
+      match.team2.id = teamLinkString2.substring(teamLinkString2.indexOf("/", 1) + 1, teamLinkString2.lastIndexOf("/"))
       console.log(`Teams Playing: ${JSON.stringify(match.team1)} vs ${JSON.stringify(match.team2)}`);
       console.log('-----------------------------------------');
       const streamLinks = $(".match-streams-btn-external");
@@ -113,19 +107,36 @@ function getMatch(matchUrl, startsIn, isTest) {
       console.log(`Full Match Details: ${JSON.stringify(match)}`);
       console.log('-----------------------------------------');
       if (!isTest) {
-          // note: not every team has a team ID
-          // maybe make this its own function separate from getting the match from vlr
+        // note: not every team has a team ID
+        // maybe make this its own function separate from getting the match from vlr
 
-          // 1) get users subscribed to this team from DB
-          getUsersForTeamsAndGame([match.team1.id, match.team2.id], Games.valorant).then((result) => {
-            // 2) POST it over to Revere bot
+        // 1) get users subscribed to this team from DB
+        getUsersForTeamsAndGame([match.team1.id, match.team2.id], matchUrl, startsIn, Games.valorant).then((result) => {
+          // 2) POST it over to Revere bot
+          if (!result) return;
+          axios.post(process.env.REVERE_API_POST_URL, result, {
+            headers: {
+              "revere-api-key": process.env.REVERE_API_KEY
+            }
           })
+        })
       } else {
         console.log(`this run is a test; data not sent to backend: ${JSON.stringify(match)}`)
       }
 
     }
   });
+}
+function matchStartsInWindow(timeTilStartString) {
+  //this is a "Xh xM" timeTilStart
+  // if (/\b\d{1,2}h \d{1,2}m\b/.test(timeTilStartString)) {
+  //   return true
+  // }
+  if (/^\d{1,2}m$/.test(timeTilStartString)) {
+    //process.env.SCRAPE_TIMER_MINUTES
+    return true
+  }
+
 }
 
 module.exports = { getMatchesStartingSoon };
